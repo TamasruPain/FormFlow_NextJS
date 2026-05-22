@@ -1,0 +1,106 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Better Auth auto-generates: user, session, account, verification tables
+// Run: npx @better-auth/cli generate
+
+model Form {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  schema      Json // Array of FieldDefinition objects
+  isPublished Boolean  @default(false)
+  isMultiStep Boolean  @default(false)
+  slug        String   @unique // Used in /embed/:slug
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  responses Response[]
+
+  @@index([userId])
+}
+
+model Response {
+  id        String   @id @default(cuid())
+  formId    String
+  data      Json // { fieldId: value }
+  metadata  Json? // Browser info, IP (hashed), timestamp
+  aiInsight String? // Populated async by QStash → AI webhook
+  status    String   @default("pending") // "pending" | "analyzed" | "failed"
+  createdAt DateTime @default(now())
+
+  form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([formId])
+  @@index([status])
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
