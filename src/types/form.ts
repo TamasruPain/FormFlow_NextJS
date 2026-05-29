@@ -6,7 +6,8 @@ export type FieldType =
   | "select"
   | "checkbox"
   | "radio"
-  | "date";
+  | "date"
+  | "file";
 
 export interface FieldDefinition {
   id: string;

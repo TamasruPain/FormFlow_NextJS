@@ -44,6 +44,7 @@ export function FieldEditor({ onGoToCanvas }: { onGoToCanvas?: () => void }) {
     "number",
     "textarea",
     "date",
+    "file",
   ].includes(selectedField.type);
 
   const showOptions = ["select", "checkbox", "radio"].includes(

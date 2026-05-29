@@ -1,6 +1,6 @@
 import React from "react";
 import { FieldDefinition } from "@/types/form";
-import { AlertCircle, ChevronDown, Check } from "lucide-react";
+import { AlertCircle, ChevronDown, Check, Upload, X, FileText } from "lucide-react";
 
 interface FieldRendererProps {
   field: FieldDefinition;
@@ -201,6 +201,75 @@ export function FieldRenderer({
                 </label>
               );
             })}
+          </div>
+        ) : type === "file" ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <input
+                id={inputId}
+                type="file"
+                accept="application/pdf"
+                disabled={disabled}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) {
+                    onChange(null);
+                    return;
+                  }
+
+                  if (file.size > 5 * 1024 * 1024) {
+                    alert("File is too large. Maximum size allowed is 5MB.");
+                    e.target.value = "";
+                    onChange(null);
+                    return;
+                  }
+
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    onChange({
+                      name: file.name,
+                      size: file.size,
+                      type: file.type,
+                      base64: reader.result as string,
+                    });
+                  };
+                  reader.readAsDataURL(file);
+                }}
+                className="hidden"
+              />
+              <label
+                htmlFor={inputId}
+                className={`flex items-center gap-2 cursor-pointer rounded-xl border bg-white/95 px-4 py-3 text-sm text-slate-800 transition duration-200 hover:bg-slate-50 focus-within:ring-2 focus-within:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50 select-none ${
+                  error ? "border-rose-500" : "border-blue-200/80 hover:border-blue-300"
+                }`}
+              >
+                <Upload className="h-4 w-4 text-slate-500" />
+                <span>{value && typeof value === "object" ? "Change PDF File" : placeholder || "Choose PDF File"}</span>
+              </label>
+
+              {value && typeof value === "object" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const inputEl = document.getElementById(inputId) as HTMLInputElement;
+                    if (inputEl) inputEl.value = "";
+                    onChange(null);
+                  }}
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 transition-all cursor-pointer animate-in fade-in duration-200"
+                  title="Remove selected file"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {value && typeof value === "object" && value.name && (
+              <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200/60 p-2.5 rounded-xl w-fit animate-in slide-in-from-top-1 duration-200">
+                <FileText className="h-4 w-4 text-blue-500 shrink-0" />
+                <span className="font-semibold max-w-[200px] truncate">{value.name}</span>
+                <span className="text-slate-400">({(value.size / 1024 / 1024).toFixed(2)} MB)</span>
+              </div>
+            )}
           </div>
         ) : (
           // Default: text, email, number, date

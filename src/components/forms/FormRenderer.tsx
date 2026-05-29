@@ -83,6 +83,11 @@ export function FormRenderer({ form, isPreview = false }: FormRendererProps) {
         if (field.type === "number" && isNaN(Number(val))) {
           newErrors[field.id] = "Please enter a valid number.";
         }
+        if (field.type === "file") {
+          if (typeof val !== "object" || val === null || !val.base64) {
+            newErrors[field.id] = "Please upload a valid PDF document.";
+          }
+        }
       }
     });
 

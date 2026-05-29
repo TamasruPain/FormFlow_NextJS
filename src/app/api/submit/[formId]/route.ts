@@ -65,6 +65,16 @@ export async function POST(
         if (field.type === "number" && isNaN(Number(val))) {
           errors[field.id] = "Please enter a valid number.";
         }
+        if (field.type === "file") {
+          if (typeof val === "object" && val !== null) {
+            const { base64 } = val as any;
+            if (!base64 || typeof base64 !== "string" || !base64.startsWith("data:application/pdf;base64,")) {
+              errors[field.id] = "Invalid file. Please upload a valid PDF document.";
+            }
+          } else {
+            errors[field.id] = "Invalid file format.";
+          }
+        }
       }
     });
 

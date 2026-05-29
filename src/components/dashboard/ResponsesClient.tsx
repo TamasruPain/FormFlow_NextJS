@@ -112,6 +112,7 @@ export function ResponsesClient({ form, responses }: ResponsesClientProps) {
         const val = res.data[field.id];
         if (Array.isArray(val)) return `"${val.join(", ")}"`;
         if (typeof val === "boolean") return val ? "Yes" : "No";
+        if (typeof val === "object" && val !== null && "name" in val) return `"${(val as any).name}"`;
         return `"${String(val || "").replace(/"/g, '""')}"`;
       });
 
@@ -318,7 +319,7 @@ export function ResponsesClient({ form, responses }: ResponsesClientProps) {
                     className="hover:bg-zinc-900/10 transition duration-150 cursor-pointer"
                     onClick={() => window.open(`/forms/${form.id}/responses/${res.id}`, "_blank")}
                   >
-                    <td className="py-4 px-6 whitespace-nowrap text-zinc-400">
+                    <td className="py-4 px-6 whitespace-nowrap text-zinc-400" suppressHydrationWarning>
                       {new Date(res.createdAt).toLocaleDateString()}{" "}
                       <span className="text-xs opacity-60">
                         {new Date(res.createdAt).toLocaleTimeString([], {
@@ -331,7 +332,13 @@ export function ResponsesClient({ form, responses }: ResponsesClientProps) {
                       const val = res.data[field.id];
                       let displayVal = "N/A";
                       if (val !== undefined && val !== null && val !== "") {
-                        displayVal = Array.isArray(val) ? val.join(", ") : String(val);
+                        if (Array.isArray(val)) {
+                          displayVal = val.join(", ");
+                        } else if (typeof val === "object" && val !== null && "name" in val) {
+                          displayVal = (val as any).name;
+                        } else {
+                          displayVal = String(val);
+                        }
                       }
                       return (
                         <td
@@ -397,7 +404,7 @@ export function ResponsesClient({ form, responses }: ResponsesClientProps) {
                 >
                   <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-xs text-zinc-500" suppressHydrationWarning>
                         {new Date(res.createdAt).toLocaleDateString()}
                       </span>
                       <Badge variant="outline" className={`text-xs border ${sentiment.color}`}>

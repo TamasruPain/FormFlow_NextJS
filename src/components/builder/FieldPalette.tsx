@@ -12,6 +12,7 @@ import {
   CircleDot,
   Calendar,
   Plus,
+  Upload,
 } from "lucide-react";
 import { FieldType } from "@/types/form";
 import { useBuilderStore } from "@/store/builderStore";
@@ -71,6 +72,12 @@ const PALETTE_ITEMS: PaletteItem[] = [
     label: "Date Picker",
     description: "Calendar selector for dates.",
     icon: Calendar,
+  },
+  {
+    type: "file",
+    label: "PDF Upload",
+    description: "Upload PDF documents (up to 5MB).",
+    icon: Upload,
   },
 ];
 

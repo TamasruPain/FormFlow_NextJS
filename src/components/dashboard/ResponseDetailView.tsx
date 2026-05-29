@@ -13,6 +13,8 @@ import {
   X,
   Check,
   AlertTriangle,
+  FileText,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -113,7 +115,7 @@ export function ResponseDetailView({ form, response }: ResponseDetailViewProps) 
             {submitterName ? `Submission from ${submitterName}` : `Submission ${response.id.slice(0, 8)}`}
           </h1>
           <p className="text-sm text-zinc-400">
-            Form: <span className="text-zinc-300 font-semibold">{form.title}</span> • Submitted on {new Date(response.createdAt).toLocaleString()}
+            Form: <span className="text-zinc-300 font-semibold">{form.title}</span> • Submitted on <span suppressHydrationWarning>{new Date(response.createdAt).toLocaleString()}</span>
           </p>
         </div>
         <div className="flex gap-3">
@@ -168,6 +170,33 @@ export function ResponseDetailView({ form, response }: ResponseDetailViewProps) 
                     <span className="text-zinc-200 text-sm font-semibold">
                       {val ? "Yes (Checked)" : "No (Unchecked)"}
                     </span>
+                  );
+                } else if (typeof val === "object" && val !== null && "base64" in val) {
+                  const fileObj = val as { name: string; size: number; type: string; base64: string };
+                  displayVal = (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-zinc-800 bg-zinc-900/30 w-full animate-in fade-in duration-200">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-sm font-semibold text-zinc-100 block truncate max-w-[200px] sm:max-w-[280px]">
+                            {fileObj.name}
+                          </span>
+                          <span className="text-xs text-zinc-500 block">
+                            PDF Document • {(fileObj.size / 1024 / 1024).toFixed(2)} MB
+                          </span>
+                        </div>
+                      </div>
+                      <a
+                        href={fileObj.base64}
+                        download={fileObj.name}
+                        className="inline-flex items-center gap-1.5 justify-center rounded-lg bg-blue-600 hover:bg-blue-500 px-3.5 py-2 text-xs font-semibold text-white transition duration-200 w-fit shrink-0 cursor-pointer shadow-md shadow-blue-500/15"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        Download
+                      </a>
+                    </div>
                   );
                 } else {
                   displayVal = (
@@ -233,6 +262,9 @@ export function ResponseDetailView({ form, response }: ResponseDetailViewProps) 
                     formattedVal = val.join(", ");
                   } else if (typeof val === "boolean") {
                     formattedVal = val ? "Yes" : "No";
+                  } else if (typeof val === "object" && val !== null && "name" in val) {
+                    const fileObj = val as { name: string; size: number };
+                    formattedVal = `${fileObj.name} (${(fileObj.size / 1024 / 1024).toFixed(2)} MB)`;
                   } else {
                     formattedVal = String(val);
                   }

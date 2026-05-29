@@ -67,6 +67,8 @@ const createDefaultField = (type: FieldType): FieldDefinition => {
       return { ...base, label: "Multiple Choice", options: ["Option A", "Option B"] };
     case "date":
       return { ...base, label: "Date Selector" };
+    case "file":
+      return { ...base, label: "PDF File Upload", placeholder: "Upload your PDF file..." };
   }
 };
 

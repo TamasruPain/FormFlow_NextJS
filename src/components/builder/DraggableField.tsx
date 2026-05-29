@@ -14,6 +14,7 @@ import {
   CheckSquare,
   CircleDot,
   Calendar,
+  Upload,
 } from "lucide-react";
 import { FieldDefinition } from "@/types/form";
 import { useBuilderStore } from "@/store/builderStore";
@@ -61,6 +62,8 @@ export function DraggableField({ field }: DraggableFieldProps) {
         return CircleDot;
       case "date":
         return Calendar;
+      case "file":
+        return Upload;
       default:
         return Type;
     }
@@ -88,6 +91,13 @@ export function DraggableField({ field }: DraggableFieldProps) {
             disabled
             className="w-full rounded-md border border-white/10 bg-white/10 px-2.5 py-1 h-8 text-xs text-white placeholder-white/40 cursor-not-allowed"
           />
+        );
+      case "file":
+        return (
+          <div className="flex items-center gap-2 w-full rounded-md border border-white/10 bg-white/10 px-2.5 py-1 h-8 text-xs text-white/50 cursor-not-allowed">
+            <Upload className="h-3 w-3 text-white/40 shrink-0" />
+            <span className="truncate">{field.placeholder || "Upload PDF file..."}</span>
+          </div>
         );
       case "textarea":
         return (

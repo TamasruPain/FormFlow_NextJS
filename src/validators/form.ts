@@ -9,6 +9,7 @@ export const FieldTypeSchema = z.enum([
   "checkbox",
   "radio",
   "date",
+  "file",
 ]);
 
 export const FieldDefinitionSchema = z.object({
