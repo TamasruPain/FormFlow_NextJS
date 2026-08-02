@@ -15,6 +15,8 @@ import {
   Copy,
 } from "lucide-react";
 
+import { useToastStore } from "@/store/toastStore";
+
 interface FormCardProps {
   id: string;
   title: string;
@@ -34,6 +36,8 @@ export function FormCard({
   createdAt,
   onDelete,
 }: FormCardProps) {
+  const { showToast } = useToastStore();
+
   const formattedDate = new Date(createdAt).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -45,7 +49,7 @@ export function FormCard({
     e.stopPropagation();
     const embedUrl = `${window.location.origin}/embed/${id}`;
     navigator.clipboard.writeText(embedUrl);
-    alert("Embed URL copied to clipboard!");
+    showToast("Embed URL copied to clipboard!", "success");
   };
 
   return (

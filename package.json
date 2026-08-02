@@ -1,5 +1,5 @@
 {
-  "name": "formflow",
+  "name": "formkyte",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -24,9 +24,10 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.39.0",
     "lucide-react": "^1.16.0",
-    "next": "16.2.6",
-    "nodemailer": "^8.0.7",
+    "next": "^16.2.12",
+    "nodemailer": "^9.0.3",
     "openai": "^6.38.0",
+    "pdf-parse": "^2.4.5",
     "prisma": "^7.8.0",
     "radix-ui": "^1.4.3",
     "react": "19.2.4",

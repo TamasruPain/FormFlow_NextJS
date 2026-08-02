@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FieldDefinition } from "@/types/form";
 import { SubmissionResponse } from "@/types/response";
 import { Button } from "@/components/ui/button";
@@ -9,14 +9,15 @@ import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   Sparkles,
-  Calendar,
   X,
   Check,
   AlertTriangle,
   FileText,
   Download,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
+import { useToastStore } from "@/store/toastStore";
 
 interface ResponseDetailViewProps {
   form: {
@@ -74,6 +75,83 @@ const getSentimentDetails = (insight: string | null) => {
 
 export function ResponseDetailView({ form, response }: ResponseDetailViewProps) {
   const { schema } = form;
+  const [currentResponse, setCurrentResponse] = useState(response);
+  const [isRegenerating, setIsRegenerating] = useState(response.status === "pending");
+  const { showToast } = useToastStore();
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  }, []);
+
+  const startPolling = useCallback(() => {
+    stopPolling();
+    pollingIntervalRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/forms/${form.id}/responses/${response.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setCurrentResponse((prev) => ({
+            ...prev,
+            status: data.status,
+            aiInsight: data.aiInsight,
+          }));
+
+          if (data.status === "analyzed" || data.status === "failed") {
+            stopPolling();
+            setIsRegenerating(false);
+            if (data.status === "analyzed") {
+              showToast("AI Insights regenerated successfully!", "success");
+            } else {
+              showToast("AI Insights regeneration failed.", "error");
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+    }, 3000);
+  }, [form.id, response.id, stopPolling, showToast]);
+
+  const handleRegenerate = async () => {
+    if (isRegenerating) return;
+    setIsRegenerating(true);
+    setCurrentResponse((prev) => ({
+      ...prev,
+      status: "pending",
+      aiInsight: null,
+    }));
+
+    try {
+      const res = await fetch(`/api/forms/${form.id}/responses/${response.id}`, {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to trigger regeneration");
+      }
+
+      showToast("Regeneration started...", "info");
+      startPolling();
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to start regeneration. Please try again.", "error");
+      setIsRegenerating(false);
+      setCurrentResponse(response);
+    }
+  };
+
+  useEffect(() => {
+    if (response.status === "pending") {
+      startPolling();
+    }
+    return () => {
+      stopPolling();
+    };
+  }, [response.status, startPolling, stopPolling]);
 
   const submitterName = (() => {
     const nameField = schema.find(
@@ -81,12 +159,12 @@ export function ResponseDetailView({ form, response }: ResponseDetailViewProps) 
         (f.type === "text" || f.type === "email") &&
         /name|user|full\s*name|first\s*name/i.test(f.label)
     );
-    return nameField && response.data[nameField.id]
-      ? String(response.data[nameField.id])
+    return nameField && currentResponse.data[nameField.id]
+      ? String(currentResponse.data[nameField.id])
       : null;
   })();
 
-  const sentiment = getSentimentDetails(response.aiInsight);
+  const sentiment = getSentimentDetails(currentResponse.aiInsight);
 
   // Close dynamic tab helper
   const handleCloseTab = () => {
@@ -147,7 +225,7 @@ export function ResponseDetailView({ form, response }: ResponseDetailViewProps) 
 
           <div className="space-y-5 overflow-y-auto max-h-[550px] pr-2 custom-scrollbar">
             {schema.map((field) => {
-              const val = response.data[field.id];
+              const val = currentResponse.data[field.id];
               let displayVal = <span className="text-zinc-500 italic">No Answer Provided</span>;
 
               if (val !== undefined && val !== null && val !== "") {
@@ -234,14 +312,28 @@ export function ResponseDetailView({ form, response }: ResponseDetailViewProps) 
                 <p className="text-xs text-zinc-500">Inputs synthesis and semantic evaluation</p>
               </div>
             </div>
-            {response.status === "analyzed" && (
-              <Badge
+            <div className="flex flex-col items-end gap-1.5">
+              {/* Regenerate Button */}
+              <Button
+                size="sm"
                 variant="outline"
-                className={`text-xs font-bold tracking-wide uppercase border px-2.5 py-0.5 rounded-full ${sentiment.color}`}
+                onClick={handleRegenerate}
+                disabled={isRegenerating || currentResponse.status === "pending"}
+                className="h-7 rounded-lg border-zinc-800 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 bg-zinc-950/30 px-2.5 cursor-pointer disabled:opacity-50"
               >
-                {sentiment.label} Sentiment
-              </Badge>
-            )}
+                <RefreshCw className={`mr-1 h-3 w-3 ${isRegenerating ? "animate-spin" : ""}`} />
+                {isRegenerating ? "Regenerating..." : "Regenerate"}
+              </Button>
+
+              {currentResponse.status === "analyzed" && (
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] font-bold tracking-wide uppercase border px-2 py-0.5 rounded-full leading-none h-4.5 ${sentiment.color}`}
+                >
+                  {sentiment.label} Sentiment
+                </Badge>
+              )}
+            </div>
           </div>
 
           <div className="space-y-6 overflow-y-auto max-h-[550px] pr-2 custom-scrollbar">
@@ -254,7 +346,7 @@ export function ResponseDetailView({ form, response }: ResponseDetailViewProps) 
               
               <div className="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4 space-y-3 text-left">
                 {schema.map((field) => {
-                  const val = response.data[field.id];
+                  const val = currentResponse.data[field.id];
                   if (val === undefined || val === null || val === "") return null;
 
                   let formattedVal = "";
@@ -295,11 +387,11 @@ export function ResponseDetailView({ form, response }: ResponseDetailViewProps) 
               </h3>
 
               <div className="p-5 rounded-xl border border-zinc-800 bg-zinc-950/60 shadow-inner min-h-[150px] flex flex-col justify-center">
-                {response.status === "analyzed" ? (
+                {currentResponse.status === "analyzed" ? (
                   <div className="text-left text-sm leading-relaxed">
-                    {renderMarkdown(response.aiInsight)}
+                    {renderMarkdown(currentResponse.aiInsight)}
                   </div>
-                ) : response.status === "pending" ? (
+                ) : currentResponse.status === "pending" ? (
                   <div className="text-center py-8 text-zinc-500 space-y-3">
                     <Sparkles className="mx-auto h-6 w-6 text-blue-400 animate-spin" />
                     <p className="text-xs">

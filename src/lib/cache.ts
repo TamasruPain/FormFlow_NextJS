@@ -18,10 +18,10 @@ export async function getCachedForm(formIdOrSlug: string): Promise<Form | null> 
     });
   }
 
-  const cacheKey = `formflow:form:${formIdOrSlug}`;
+  const cacheKey = `formkyte:form:${formIdOrSlug}`;
 
   try {
-    const cached = await redis.get<any>(cacheKey);
+    const cached = await redis.get<Form>(cacheKey);
     if (cached) {
       // Upstash Redis SDK auto-deserializes JSON if stored as object, or returns parsed string
       return typeof cached === "string" ? JSON.parse(cached) : cached;
@@ -42,8 +42,8 @@ export async function getCachedForm(formIdOrSlug: string): Promise<Form | null> 
       const serialized = JSON.stringify(form);
       // Cache by both ID and Slug to allow fast lookups on either key
       await Promise.all([
-        redis.set(`formflow:form:${form.id}`, serialized, { ex: CACHE_TTL }),
-        redis.set(`formflow:form:${form.slug}`, serialized, { ex: CACHE_TTL }),
+        redis.set(`formkyte:form:${form.id}`, serialized, { ex: CACHE_TTL }),
+        redis.set(`formkyte:form:${form.slug}`, serialized, { ex: CACHE_TTL }),
       ]);
     } catch (err) {
       console.error("[CACHE_SET_ERROR] Failed to save form to Redis cache:", err);
@@ -59,9 +59,9 @@ export async function getCachedForm(formIdOrSlug: string): Promise<Form | null> 
 export async function invalidateFormCache(formId: string, slug?: string): Promise<void> {
   if (!redis) return;
 
-  const keys = [`formflow:form:${formId}`];
+  const keys = [`formkyte:form:${formId}`];
   if (slug) {
-    keys.push(`formflow:form:${slug}`);
+    keys.push(`formkyte:form:${slug}`);
   }
 
   try {

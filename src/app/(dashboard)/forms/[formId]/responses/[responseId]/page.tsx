@@ -4,7 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ResponseDetailView } from "@/components/dashboard/ResponseDetailView";
-import { SubmissionResponse, ResponseData } from "@/types/response";
+import { SubmissionResponse, ResponseData, ResponseMetadata } from "@/types/response";
 import { FieldDefinition } from "@/types/form";
 
 interface PageProps {
@@ -55,7 +55,7 @@ export default async function ResponseDetailPage({ params }: PageProps) {
     id: rawResponse.id,
     formId: rawResponse.formId,
     data: (rawResponse.data || {}) as ResponseData,
-    metadata: rawResponse.metadata as any,
+    metadata: rawResponse.metadata as unknown as ResponseMetadata | null,
     aiInsight: rawResponse.aiInsight,
     status: rawResponse.status as "pending" | "analyzed" | "failed",
     createdAt: rawResponse.createdAt,

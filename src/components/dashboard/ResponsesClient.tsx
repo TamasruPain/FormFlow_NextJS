@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { FieldDefinition } from "@/types/form";
-import { SubmissionResponse, ResponseData } from "@/types/response";
+import { SubmissionResponse } from "@/types/response";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,8 +14,10 @@ import {
   Sparkles,
   ListFilter,
   Check,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
+import { useToastStore } from "@/store/toastStore";
 
 interface ResponsesClientProps {
   form: {
@@ -62,12 +64,113 @@ export function ResponsesClient({ form, responses }: ResponsesClientProps) {
 
   const [activeTab, setActiveTab] = useState<"table" | "ai">("table");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentResponses, setCurrentResponses] = useState(responses);
+  const [prevResponses, setPrevResponses] = useState(responses);
+  const { showToast } = useToastStore();
+  const [loadingIds, setLoadingIds] = useState<Record<string, boolean>>({});
+  const activePollsRef = useRef<Record<string, NodeJS.Timeout>>({});
+
+  // Sync state with props in render pass instead of useEffect
+  if (responses !== prevResponses) {
+    setPrevResponses(responses);
+    setCurrentResponses(responses);
+  }
+
+  // Clean up all active polls on unmount
+  useEffect(() => {
+    const activePolls = activePollsRef.current;
+    return () => {
+      Object.values(activePolls).forEach(clearInterval);
+    };
+  }, []);
+
+  // Poll for individual response status updates
+  const startPolling = useCallback((responseId: string) => {
+    if (activePollsRef.current[responseId]) {
+      clearInterval(activePollsRef.current[responseId]);
+    }
+
+    activePollsRef.current[responseId] = setInterval(async () => {
+      try {
+        const checkRes = await fetch(`/api/forms/${form.id}/responses/${responseId}`);
+        if (checkRes.ok) {
+          const data = await checkRes.json();
+          
+          setCurrentResponses(prev =>
+            prev.map(r => (r.id === responseId ? { ...r, status: data.status, aiInsight: data.aiInsight } : r))
+          );
+
+          if (data.status === "analyzed" || data.status === "failed") {
+            if (activePollsRef.current[responseId]) {
+              clearInterval(activePollsRef.current[responseId]);
+              delete activePollsRef.current[responseId];
+            }
+            setLoadingIds(prev => ({ ...prev, [responseId]: false }));
+
+            if (data.status === "analyzed") {
+              showToast("AI Insights regenerated successfully!", "success");
+            } else {
+              showToast("AI Insights regeneration failed.", "error");
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Polling error for response ID:", responseId, err);
+      }
+    }, 3000);
+  }, [form.id, showToast]);
+
+  // Start regeneration handler
+  const handleRegenerate = async (responseId: string) => {
+    if (loadingIds[responseId] || currentResponses.find(r => r.id === responseId)?.status === "pending") return;
+
+    setLoadingIds(prev => ({ ...prev, [responseId]: true }));
+    
+    // Set status to pending locally
+    setCurrentResponses(prev =>
+      prev.map(r => (r.id === responseId ? { ...r, status: "pending", aiInsight: null } : r))
+    );
+
+    try {
+      const res = await fetch(`/api/forms/${form.id}/responses/${responseId}`, {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to trigger regeneration");
+      }
+
+      showToast("Regeneration started...", "info");
+      startPolling(responseId);
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to start regeneration.", "error");
+      setLoadingIds(prev => ({ ...prev, [responseId]: false }));
+      
+      const original = responses.find(r => r.id === responseId);
+      if (original) {
+        setCurrentResponses(prev =>
+          prev.map(r => (r.id === responseId ? original : r))
+        );
+      }
+    }
+  };
+
+  // Auto-start polling for any initially pending responses
+  useEffect(() => {
+    responses.forEach(r => {
+      if (r.status === "pending" && !activePollsRef.current[r.id]) {
+        setLoadingIds(prev => ({ ...prev, [r.id]: true }));
+        startPolling(r.id);
+      }
+    });
+  }, [responses, startPolling]);
 
   // Filter responses by search query
   const filteredResponses = useMemo(() => {
-    if (!searchQuery) return responses;
+    if (!searchQuery) return currentResponses;
     const query = searchQuery.toLowerCase();
-    return responses.filter((res) => {
+    return currentResponses.filter((res) => {
       // Check response data
       const dataMatch = Object.values(res.data).some((val) =>
         String(val).toLowerCase().includes(query)
@@ -76,17 +179,17 @@ export function ResponsesClient({ form, responses }: ResponsesClientProps) {
       const insightMatch = res.aiInsight?.toLowerCase().includes(query) || false;
       return dataMatch || insightMatch;
     });
-  }, [responses, searchQuery]);
+  }, [currentResponses, searchQuery]);
 
   // Calculate statistics
   const stats = useMemo(() => {
-    const total = responses.length;
-    const analyzed = responses.filter((r) => r.status === "analyzed").length;
-    const pending = responses.filter((r) => r.status === "pending").length;
+    const total = currentResponses.length;
+    const analyzed = currentResponses.filter((r) => r.status === "analyzed").length;
+    const pending = currentResponses.filter((r) => r.status === "pending").length;
 
     // Detect positive sentiment counts
     let positiveCount = 0;
-    responses.forEach((r) => {
+    currentResponses.forEach((r) => {
       if (r.aiInsight && /positive/i.test(r.aiInsight)) {
         positiveCount++;
       }
@@ -95,24 +198,24 @@ export function ResponsesClient({ form, responses }: ResponsesClientProps) {
     const positivePercent = analyzed > 0 ? Math.round((positiveCount / analyzed) * 100) : 0;
 
     return { total, analyzed, pending, positivePercent };
-  }, [responses]);
+  }, [currentResponses]);
 
   // Export to CSV Function
   const exportToCSV = () => {
-    if (responses.length === 0) return;
+    if (currentResponses.length === 0) return;
 
     // Headings
     const csvHeaders = ["Submission ID", "Date", ...schema.map((f) => f.label), "AI Sentiment/Insight"];
 
     // Rows
-    const csvRows = responses.map((res) => {
+    const csvRows = currentResponses.map((res) => {
       const date = new Date(res.createdAt).toLocaleString();
       
       const answers = schema.map((field) => {
         const val = res.data[field.id];
         if (Array.isArray(val)) return `"${val.join(", ")}"`;
         if (typeof val === "boolean") return val ? "Yes" : "No";
-        if (typeof val === "object" && val !== null && "name" in val) return `"${(val as any).name}"`;
+        if (typeof val === "object" && val !== null && "name" in val) return `"${(val as unknown as { name?: string }).name || ""}"`;
         return `"${String(val || "").replace(/"/g, '""')}"`;
       });
 
@@ -321,7 +424,7 @@ export function ResponsesClient({ form, responses }: ResponsesClientProps) {
                   >
                     <td className="py-4 px-6 whitespace-nowrap text-zinc-400" suppressHydrationWarning>
                       {new Date(res.createdAt).toLocaleDateString()}{" "}
-                      <span className="text-xs opacity-60">
+                      <span className="text-xs opacity-60" suppressHydrationWarning>
                         {new Date(res.createdAt).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -335,7 +438,7 @@ export function ResponsesClient({ form, responses }: ResponsesClientProps) {
                         if (Array.isArray(val)) {
                           displayVal = val.join(", ");
                         } else if (typeof val === "object" && val !== null && "name" in val) {
-                          displayVal = (val as any).name;
+                           displayVal = (val as unknown as { name?: string }).name || "N/A";
                         } else {
                           displayVal = String(val);
                         }
@@ -373,7 +476,18 @@ export function ResponsesClient({ form, responses }: ResponsesClientProps) {
                         </Badge>
                       )}
                     </td>
-                    <td className="py-4 px-6 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <td className="py-4 px-6 text-right whitespace-nowrap flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRegenerate(res.id)}
+                        disabled={loadingIds[res.id] || res.status === "pending"}
+                        className="h-7 rounded-md px-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800 bg-zinc-950/20 cursor-pointer disabled:opacity-50"
+                      >
+                        <RefreshCw className={`h-3 w-3 ${loadingIds[res.id] || res.status === "pending" ? "animate-spin" : ""}`} />
+                        <span className="hidden sm:inline ml-1">Regenerate</span>
+                      </Button>
+
                       <Link
                         href={`/forms/${form.id}/responses/${res.id}`}
                         target="_blank"

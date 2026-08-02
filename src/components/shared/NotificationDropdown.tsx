@@ -14,7 +14,7 @@ interface Notification {
   createdAt: string;
 }
 
-const LAST_READ_KEY = "formflow_notifications_last_read";
+const LAST_READ_KEY = "formkyte_notifications_last_read";
 const POLL_INTERVAL = 30000; // 30 seconds
 
 function getTimeAgo(dateStr: string): string {
@@ -43,7 +43,11 @@ export function NotificationDropdown() {
   // Initialize lastReadTime from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem(LAST_READ_KEY);
-    setLastReadTime(stored || new Date(0).toISOString());
+    const time = stored || new Date(0).toISOString();
+    const timer = setTimeout(() => {
+      setLastReadTime(time);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const fetchNotifications = useCallback(async () => {
@@ -63,9 +67,14 @@ export function NotificationDropdown() {
 
   // Initial fetch and polling
   useEffect(() => {
-    fetchNotifications();
+    const timer = setTimeout(() => {
+      fetchNotifications();
+    }, 0);
     const interval = setInterval(fetchNotifications, POLL_INTERVAL);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, [fetchNotifications]);
 
   // Click outside to close

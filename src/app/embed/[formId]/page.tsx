@@ -4,6 +4,7 @@ import { EyeOff } from "lucide-react";
 import { Metadata } from "next";
 import { getCachedForm } from "@/lib/cache";
 import Link from "next/link";
+import { FieldDefinition } from "@/types/form";
 
 interface PageProps {
   params: Promise<{
@@ -18,13 +19,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!form) {
     return {
-      title: "Form Not Found - FormFlow",
+      title: "Form Not Found - FormKyte",
     };
   }
 
   return {
-    title: `${form.title} - FormFlow`,
-    description: form.description || "Submit responses securely on FormFlow.",
+    title: `${form.title} - FormKyte`,
+    description: form.description || "Submit responses securely on FormKyte.",
   };
 }
 
@@ -62,7 +63,7 @@ export default async function EmbedPage({ params }: PageProps) {
           >
             <span>Powered by</span>
             <span className="font-extrabold text-slate-700 group-hover:text-blue-600 transition-colors">
-              Form<span className="text-blue-600">Flow</span>
+              Form<span className="text-blue-600">Kyte</span>
             </span>
           </Link>
         </div>
@@ -71,7 +72,7 @@ export default async function EmbedPage({ params }: PageProps) {
   }
 
   // Cast JSON schema to FieldDefinition array
-  const schema = (form.schema || []) as any;
+  const schema = (form.schema || []) as unknown as FieldDefinition[];
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-sky-100 via-blue-50 to-sky-100 flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden">
@@ -97,7 +98,7 @@ export default async function EmbedPage({ params }: PageProps) {
         >
           <span>Powered by</span>
           <span className="font-extrabold text-slate-700 group-hover:text-blue-600 transition-colors">
-            Form<span className="text-blue-600">Flow</span>
+            Form<span className="text-blue-600">Kyte</span>
           </span>
         </Link>
       </div>

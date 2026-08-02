@@ -4,7 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ResponsesClient } from "@/components/dashboard/ResponsesClient";
-import { SubmissionResponse, ResponseData } from "@/types/response";
+import { SubmissionResponse, ResponseData, ResponseMetadata } from "@/types/response";
 import { FieldDefinition } from "@/types/form";
 
 interface PageProps {
@@ -51,7 +51,7 @@ export default async function ResponsesPage({ params }: PageProps) {
     id: res.id,
     formId: res.formId,
     data: (res.data || {}) as ResponseData,
-    metadata: res.metadata as any,
+    metadata: res.metadata as unknown as ResponseMetadata | null,
     aiInsight: res.aiInsight,
     status: res.status as "pending" | "analyzed" | "failed",
     createdAt: res.createdAt,

@@ -18,8 +18,7 @@ import { FormCanvas } from "./FormCanvas";
 import { FieldEditor } from "./FieldEditor";
 import { BuilderToolbar } from "./BuilderToolbar";
 import { FieldType, FieldDefinition } from "@/types/form";
-import { Button } from "@/components/ui/button";
-import { Sparkles, Trash2, GripVertical, FileText, Plus, Settings } from "lucide-react";
+import { Sparkles, GripVertical, FileText, Plus, Settings } from "lucide-react";
 
 interface FormBuilderClientProps {
   initialForm?: {
@@ -28,7 +27,7 @@ interface FormBuilderClientProps {
     description: string | null;
     isMultiStep: boolean;
     isPublished: boolean;
-    schema: any; // FormSchema JSON
+    schema: FieldDefinition[]; // FormSchema JSON
   };
 }
 
@@ -61,13 +60,17 @@ export function FormBuilderClient({ initialForm }: FormBuilderClientProps) {
       return;
     }
 
-    if (selectedFieldId) {
-      setActiveTab("editor");
-    } else {
-      if (activeTab === "editor") {
-        setActiveTab("canvas");
+    const timer = setTimeout(() => {
+      if (selectedFieldId) {
+        setActiveTab("editor");
+      } else {
+        if (activeTab === "editor") {
+          setActiveTab("canvas");
+        }
       }
-    }
+    }, 0);
+
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFieldId]);
 

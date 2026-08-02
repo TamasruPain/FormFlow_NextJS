@@ -80,6 +80,7 @@ export function Navbar() {
                 <p className="text-[10px] text-zinc-500 font-medium group-hover:text-zinc-400 transition-colors">{user.email}</p>
               </div>
               {user.image ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={user.image}
                   alt={user.name}

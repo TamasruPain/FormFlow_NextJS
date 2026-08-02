@@ -65,7 +65,7 @@ export default function RegisterPage() {
           },
         }
       );
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }
@@ -366,6 +366,19 @@ export default function RegisterPage() {
               </motion.div>
             </form>
           </motion.div>
+          
+          {/* Footer signature */}
+          <div className="mt-8 text-center text-xs text-zinc-500">
+            Handcrafted with ❤️ by{" "}
+            <a
+              href="https://github.com/TamasruPain"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#71717A] hover:text-[#E5A320] transition-colors duration-200 font-semibold"
+            >
+              @TamasruPain
+            </a>
+          </div>
         </div>
       </div>
     </div>

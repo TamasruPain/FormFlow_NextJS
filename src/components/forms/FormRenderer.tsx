@@ -2,8 +2,10 @@
 
 import React, { useState } from "react";
 import { FieldDefinition } from "@/types/form";
-import { FieldRenderer } from "./FieldRenderer";
+import { FieldRenderer, FileValue } from "./FieldRenderer";
 import { MultiStepForm } from "./MultiStepForm";
+
+type FormValues = Record<string, string | number | boolean | string[] | FileValue | null | undefined>;
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
@@ -43,13 +45,13 @@ function parseUserAgent(ua: string) {
 export function FormRenderer({ form, isPreview = false }: FormRendererProps) {
   const { id, title, description, schema, isMultiStep } = form;
   
-  const [values, setValues] = useState<Record<string, any>>({});
+  const [values, setValues] = useState<FormValues>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleFieldChange = (fieldId: string, value: any) => {
+  const handleFieldChange = (fieldId: string, value: string | number | boolean | string[] | FileValue | null | undefined) => {
     setValues((prev) => ({
       ...prev,
       [fieldId]: value,
@@ -84,7 +86,8 @@ export function FormRenderer({ form, isPreview = false }: FormRendererProps) {
           newErrors[field.id] = "Please enter a valid number.";
         }
         if (field.type === "file") {
-          if (typeof val !== "object" || val === null || !val.base64) {
+          const fileVal = val && typeof val === "object" && !Array.isArray(val) && "base64" in val ? (val as FileValue) : null;
+          if (!fileVal || !fileVal.base64) {
             newErrors[field.id] = "Please upload a valid PDF document.";
           }
         }
@@ -142,8 +145,9 @@ export function FormRenderer({ form, isPreview = false }: FormRendererProps) {
       }
 
       setIsSubmitted(true);
-    } catch (err: any) {
-      setSubmitError(err.message || "An unexpected error occurred. Please try again.");
+    } catch (err) {
+      const errorObj = err as Error;
+      setSubmitError(errorObj.message || "An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -189,7 +193,7 @@ export function FormRenderer({ form, isPreview = false }: FormRendererProps) {
             rel="noopener noreferrer"
             className="text-[10px] font-extrabold text-slate-600 hover:text-blue-600 transition-colors"
           >
-            Form<span className="text-blue-600">Flow</span>
+            Form<span className="text-blue-600">Kyte</span>
           </a>
         </div>
       </motion.div>
@@ -284,7 +288,7 @@ export function FormRenderer({ form, isPreview = false }: FormRendererProps) {
           rel="noopener noreferrer"
           className="text-[10px] font-extrabold text-slate-600 hover:text-blue-600 transition-colors"
         >
-          Form<span className="text-blue-600">Flow</span>
+          Form<span className="text-blue-600">Kyte</span>
         </a>
       </div>
     </div>

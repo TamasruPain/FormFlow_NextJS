@@ -97,7 +97,7 @@ export default async function LandingPage() {
         {/* Glowing badge */}
         <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1.5 text-xs font-semibold text-blue-300 mb-6 shadow-sm shadow-sky-500/5 animate-pulse">
           <Sparkles className="h-3.5 w-3.5" />
-          <span>FormFlow SaaS Builder</span>
+          <span>FormKyte SaaS Builder</span>
         </div>
 
         <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight bg-gradient-to-r from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent">
@@ -140,7 +140,7 @@ export default async function LandingPage() {
             Everything you need to gather data
           </h2>
           <p className="text-sm text-zinc-400 leading-relaxed">
-            FormFlow is packed with enterprise-grade features, all running on a
+            FormKyte is packed with enterprise-grade features, all running on a
             completely free, highly responsive serverless infrastructure.
           </p>
         </div>
@@ -169,8 +169,19 @@ export default async function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-zinc-900/50 py-8 text-center text-xs text-zinc-500">
-        <p>&copy; {new Date().getFullYear()} FormFlow. All rights reserved.</p>
+      <footer className="relative z-10 border-t border-zinc-900/50 py-8 text-center text-xs text-zinc-500 flex flex-col items-center gap-2">
+        <p>&copy; {new Date().getFullYear()} FormKyte. All rights reserved.</p>
+        <p className="text-[#71717A]">
+          Handcrafted with ❤️ by{" "}
+          <a
+            href="https://github.com/TamasruPain"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-[#E5A320] transition-colors duration-200 font-semibold"
+          >
+            @TamasruPain
+          </a>
+        </p>
       </footer>
     </div>
   );

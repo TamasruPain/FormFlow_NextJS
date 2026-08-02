@@ -15,8 +15,9 @@ export async function GET(request: NextRequest) {
     sessionWithCache = await auth.api.getSession({
       headers: reqHeaders,
     });
-  } catch (err: any) {
-    errorWithCache = err.message || String(err);
+  } catch (err) {
+    const errorObj = err as Error;
+    errorWithCache = errorObj.message || String(err);
   }
 
   try {
@@ -24,8 +25,9 @@ export async function GET(request: NextRequest) {
       headers: reqHeaders,
       query: { disableCookieCache: true },
     });
-  } catch (err: any) {
-    errorWithoutCache = err.message || String(err);
+  } catch (err) {
+    const errorObj = err as Error;
+    errorWithoutCache = errorObj.message || String(err);
   }
 
   // Get raw cookie strings for safety inspection

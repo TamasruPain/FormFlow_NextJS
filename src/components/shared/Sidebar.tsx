@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "./Logo";
 import { useSidebarStore } from "@/store/sidebarStore";
 import {
@@ -12,8 +12,11 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Rocket,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { signOut } from "@/lib/auth-client";
 
 interface SidebarProps {
   className?: string;
@@ -21,7 +24,19 @@ interface SidebarProps {
 
 export function Sidebar({ className = "" }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { isCollapsed, isMobileOpen, toggleCollapsed, setMobileOpen } = useSidebarStore();
+
+  const handleLogout = async () => {
+    await signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/login");
+          router.refresh();
+        },
+      },
+    });
+  };
 
   const menuItems = [
     {
@@ -89,7 +104,9 @@ export function Sidebar({ className = "" }: SidebarProps) {
             const Icon = item.icon;
             const isActive =
               pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(item.href));
+              (item.href !== "/" &&
+                pathname.startsWith(item.href) &&
+                !(item.href === "/forms" && pathname.startsWith("/forms/new")));
 
             return (
               <Link
@@ -117,18 +134,57 @@ export function Sidebar({ className = "" }: SidebarProps) {
           })}
         </nav>
 
-        <div className={cn("border-t border-zinc-900 pt-4 flex items-center", isCollapsed ? "justify-center px-1" : "justify-between px-3.5")}>
+        <div className={cn("border-t border-zinc-900 pt-4 flex gap-2", isCollapsed ? "flex-col items-center px-1" : "flex-row items-stretch px-3.5")}>
           {isCollapsed ? (
-            <span
-              className="text-[10px] font-bold tracking-wider bg-gradient-to-r from-blue-400 via-sky-400 to-cyan-400 bg-clip-text text-transparent select-none"
-              title="@TamasruPain"
-            >
-              @TRP
-            </span>
+            <>
+              <a
+                href="https://github.com/TamasruPain"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/20 text-[#E5A320] hover:border-[#E5A320]/50 hover:bg-[#E5A320]/5 hover:shadow-[0_0_15px_rgba(229,163,32,0.15)] transition-all duration-300 group/collapsed"
+                title="Creator: TamasruPain"
+              >
+                <Rocket className="h-3.5 w-3.5 text-[#E5A320] group-hover/collapsed:scale-110 transition-transform duration-300" />
+              </a>
+              <button
+                onClick={handleLogout}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-900 bg-zinc-950 text-zinc-500 hover:text-rose-400 hover:border-rose-500/20 hover:bg-rose-500/5 transition-all duration-200 cursor-pointer focus:outline-none"
+                title="Log Out"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </>
           ) : (
-            <span className="text-xs font-semibold tracking-wider bg-gradient-to-r from-blue-400 via-sky-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-sm select-none">
-              @TamasruPain
-            </span>
+            <>
+              {/* Creator Card */}
+              <a
+                href="https://github.com/TamasruPain"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group/card flex items-center gap-2 flex-1 min-w-0 rounded-lg border border-zinc-900 bg-zinc-900/10 py-1.5 px-2.5 hover:border-[#E5A320]/30 hover:bg-[#E5A320]/5 hover:shadow-[0_0_15px_rgba(229,163,32,0.05)] transition-all duration-300"
+              >
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#E5A320]/10 border border-[#E5A320]/20 text-[#E5A320] group-hover/card:scale-105 transition-transform duration-300">
+                  <Rocket className="h-3.5 w-3.5" />
+                </div>
+                <div className="flex flex-col text-left truncate">
+                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider leading-none group-hover/card:text-[#E5A320] transition-colors duration-300">
+                    Creator
+                  </span>
+                  <span className="text-[11px] font-bold text-zinc-200 truncate leading-tight group-hover/card:text-white transition-colors duration-300">
+                    @TamasruPain
+                  </span>
+                </div>
+              </a>
+
+              {/* Log Out Button */}
+              <button
+                onClick={handleLogout}
+                className="flex w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-900 bg-zinc-900/10 text-zinc-500 hover:text-rose-400 hover:border-rose-500/20 hover:bg-rose-500/5 transition-all duration-200 cursor-pointer focus:outline-none"
+                title="Log Out"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </>
           )}
         </div>
       </aside>

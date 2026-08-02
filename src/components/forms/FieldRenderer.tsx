@@ -1,11 +1,19 @@
 import React from "react";
 import { FieldDefinition } from "@/types/form";
 import { AlertCircle, ChevronDown, Check, Upload, X, FileText } from "lucide-react";
+import { useToastStore } from "@/store/toastStore";
+
+export interface FileValue {
+  name: string;
+  size: number;
+  type: string;
+  base64: string;
+}
 
 interface FieldRendererProps {
   field: FieldDefinition;
-  value: any;
-  onChange: (value: any) => void;
+  value: string | number | boolean | string[] | FileValue | null | undefined;
+  onChange: (value: string | number | boolean | string[] | FileValue | null | undefined) => void;
   error?: string;
   disabled?: boolean;
 }
@@ -18,6 +26,7 @@ export function FieldRenderer({
   disabled = false,
 }: FieldRendererProps) {
   const { id, type, label, placeholder, required, options = [], helpText } = field;
+  const { showToast } = useToastStore();
 
   // Single Checkbox (Boolean) vs Multiple Checkboxes (Array)
   const handleCheckboxChange = (optionValue: string, checked: boolean) => {
@@ -62,7 +71,7 @@ export function FieldRenderer({
         {type === "textarea" ? (
           <textarea
             id={inputId}
-            value={value || ""}
+            value={typeof value === "string" || typeof value === "number" ? value : ""}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             disabled={disabled}
@@ -76,7 +85,7 @@ export function FieldRenderer({
           <div className="relative">
             <select
               id={inputId}
-              value={value || ""}
+              value={typeof value === "string" || typeof value === "number" ? value : ""}
               onChange={(e) => onChange(e.target.value)}
               disabled={disabled}
               className={`block w-full rounded-xl border bg-white/95 pl-4 pr-10 py-3 text-sm text-slate-800 placeholder-slate-400 transition duration-200 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none ${
@@ -218,7 +227,7 @@ export function FieldRenderer({
                   }
 
                   if (file.size > 5 * 1024 * 1024) {
-                    alert("File is too large. Maximum size allowed is 5MB.");
+                    showToast("File is too large. Maximum size allowed is 5MB.", "error");
                     e.target.value = "";
                     onChange(null);
                     return;
@@ -244,10 +253,10 @@ export function FieldRenderer({
                 }`}
               >
                 <Upload className="h-4 w-4 text-slate-500" />
-                <span>{value && typeof value === "object" ? "Change PDF File" : placeholder || "Choose PDF File"}</span>
+                <span>{value && typeof value === "object" && !Array.isArray(value) && "name" in value ? "Change PDF File" : placeholder || "Choose PDF File"}</span>
               </label>
 
-              {value && typeof value === "object" && (
+              {value && typeof value === "object" && !Array.isArray(value) && "name" in value && (
                 <button
                   type="button"
                   onClick={() => {
@@ -263,7 +272,7 @@ export function FieldRenderer({
               )}
             </div>
 
-            {value && typeof value === "object" && value.name && (
+            {value && typeof value === "object" && !Array.isArray(value) && "name" in value && (
               <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200/60 p-2.5 rounded-xl w-fit animate-in slide-in-from-top-1 duration-200">
                 <FileText className="h-4 w-4 text-blue-500 shrink-0" />
                 <span className="font-semibold max-w-[200px] truncate">{value.name}</span>
@@ -276,7 +285,7 @@ export function FieldRenderer({
           <input
             id={inputId}
             type={type}
-            value={value || ""}
+            value={typeof value === "string" || typeof value === "number" ? value : ""}
             onChange={(e) => {
               const val = e.target.value;
               onChange(type === "number" ? (val === "" ? "" : Number(val)) : val);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Trash2, Plus, Sparkles, ChevronLeft } from "lucide-react";
 import { useBuilderStore } from "@/store/builderStore";
 import { Input } from "@/components/ui/input";

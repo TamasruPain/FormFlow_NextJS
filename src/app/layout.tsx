@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SplashScreenProvider } from "@/components/shared/SplashScreenProvider";
+import { ToastContainer } from "@/components/shared/ToastContainer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,11 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FormFlow — Serverless AI Form Builder",
+  title: "FormKyte — Serverless AI Form Builder",
   description:
     "Design beautiful, responsive forms with drag-and-drop actions. Analyze submissions in real time with our background AI insights pipeline.",
-  keywords: ["form builder", "AI insights", "survey tool", "Next.js", "serverless form", "FormFlow"],
-  authors: [{ name: "FormFlow team" }],
+  keywords: ["form builder", "AI insights", "survey tool", "Next.js", "serverless form", "FormKyte"],
+  authors: [{ name: "FormKyte team" }],
 };
 
 export default function RootLayout({
@@ -30,7 +32,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <SplashScreenProvider>
+          {children}
+          <ToastContainer />
+        </SplashScreenProvider>
+      </body>
     </html>
   );
 }

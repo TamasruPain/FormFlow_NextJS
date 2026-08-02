@@ -147,7 +147,7 @@ function DraggablePaletteButton({
       style={style}
       {...listeners}
       {...attributes}
-      onClick={(e) => {
+      onClick={() => {
         if (isDragging) return;
         onAdd();
       }}

@@ -69,7 +69,6 @@ export function DraggableField({ field }: DraggableFieldProps) {
     }
   };
 
-  const Icon = getFieldIcon();
 
   const renderFieldPreview = () => {
     switch (field.type) {
@@ -192,7 +191,7 @@ export function DraggableField({ field }: DraggableFieldProps) {
         {/* Header row: Icon, Type, Label */}
         <div className="flex items-center justify-between gap-2 mr-6">
           <div className="flex items-center gap-1.5 min-w-0">
-            <Icon className="h-3.5 w-3.5 text-white shrink-0" />
+            {React.createElement(getFieldIcon(), { className: "h-3.5 w-3.5 text-white shrink-0" })}
             <span className="text-[9px] font-bold uppercase tracking-wider text-blue-100 shrink-0">
               {field.type}
             </span>

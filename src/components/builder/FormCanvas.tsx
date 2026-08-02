@@ -6,9 +6,9 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { FormSchema, FieldDefinition } from "@/types/form";
+import { FieldDefinition } from "@/types/form";
 import { DraggableField } from "./DraggableField";
-import { ArrowDownToLine, Sparkles, Wand2, Plus } from "lucide-react";
+import { ArrowDownToLine, Wand2, Plus } from "lucide-react";
 import { useBuilderStore } from "@/store/builderStore";
 
 interface FormCanvasProps {

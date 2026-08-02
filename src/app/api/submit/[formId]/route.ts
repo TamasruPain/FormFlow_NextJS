@@ -67,7 +67,7 @@ export async function POST(
         }
         if (field.type === "file") {
           if (typeof val === "object" && val !== null) {
-            const { base64 } = val as any;
+            const { base64 } = val as { base64?: string };
             if (!base64 || typeof base64 !== "string" || !base64.startsWith("data:application/pdf;base64,")) {
               errors[field.id] = "Invalid file. Please upload a valid PDF document.";
             }
@@ -171,7 +171,7 @@ export async function POST(
       success: true,
       responseId: newResponse.id,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Submission API Error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },

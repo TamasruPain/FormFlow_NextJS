@@ -69,7 +69,7 @@ function ResetPasswordForm() {
           router.push("/login");
         }, 3000);
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
@@ -148,7 +148,7 @@ function ResetPasswordForm() {
           Reset password
         </h2>
         <p className="text-sm text-zinc-400 leading-relaxed">
-          Create a strong, unique password to secure your FormFlow account.
+          Create a strong, unique password to secure your FormKyte account.
         </p>
       </motion.div>
 

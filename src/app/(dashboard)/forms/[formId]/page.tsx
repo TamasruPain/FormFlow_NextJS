@@ -4,6 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { FormBuilderClient } from "@/components/builder/FormBuilderClient";
+import { FieldDefinition } from "@/types/form";
 
 interface EditFormPageProps {
   params: Promise<{
@@ -42,7 +43,7 @@ export default async function EditFormPage({ params }: EditFormPageProps) {
         description: form.description,
         isMultiStep: form.isMultiStep,
         isPublished: form.isPublished,
-        schema: form.schema,
+        schema: (form.schema || []) as unknown as FieldDefinition[],
       }}
     />
   );

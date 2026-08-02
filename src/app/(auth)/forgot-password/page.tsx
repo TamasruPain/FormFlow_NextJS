@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
       } else {
         setSuccess(true);
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
@@ -176,7 +176,7 @@ export default function ForgotPasswordPage() {
                 Forgot password?
               </h2>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Enter your email address and we'll send you a link to reset your password.
+                Enter your email address and we&apos;ll send you a link to reset your password.
               </p>
             </motion.div>
 
@@ -199,7 +199,7 @@ export default function ForgotPasswordPage() {
                 className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4 text-xs text-emerald-400 font-medium space-y-1.5"
               >
                 <div className="font-bold">Reset link sent!</div>
-                <p className="leading-relaxed opacity-90">Please check your inbox. If the email doesn't arrive within 2 minutes, check your spam folder.</p>
+                <p className="leading-relaxed opacity-90">Please check your inbox. If the email doesn&apos;t arrive within 2 minutes, check your spam folder.</p>
               </motion.div>
             )}
 

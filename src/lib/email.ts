@@ -5,7 +5,7 @@ const smtpHost = process.env.SMTP_HOST;
 const smtpPort = Number(process.env.SMTP_PORT || 587);
 const smtpUser = process.env.SMTP_USER;
 const smtpPass = process.env.SMTP_PASS;
-const smtpFrom = process.env.SMTP_FROM || smtpUser || "noreply@formflow.dev";
+const smtpFrom = process.env.SMTP_FROM || smtpUser || "noreply@formkyte.dev";
 
 // Reusable Nodemailer transporter (instantiated only if credentials exist)
 const getTransporter = () => {
@@ -31,7 +31,7 @@ interface SendSubmissionNotificationProps {
   formId: string;
   responseId: string;
   schema: FieldDefinition[];
-  submittedData: Record<string, any>;
+  submittedData: Record<string, unknown>;
 }
 
 export async function sendSubmissionNotification({
@@ -77,7 +77,7 @@ export async function sendSubmissionNotification({
     })
     .join("");
 
-  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/forms/${formId}/responses`;
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/forms/${formId}/responses/${responseId}`;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -91,7 +91,7 @@ export async function sendSubmissionNotification({
           
           <!-- Banner Header -->
           <div style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); padding: 30px; text-align: center; color: #ffffff;">
-            <h1 style="margin: 0; font-size: 22px; font-weight: 800; tracking-tight: -0.025em;">FormFlow Notification</h1>
+            <h1 style="margin: 0; font-size: 22px; font-weight: 800; tracking-tight: -0.025em;">FormKyte Notification</h1>
             <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">New response received for your form</p>
           </div>
           
@@ -119,8 +119,8 @@ export async function sendSubmissionNotification({
           
           <!-- Footer -->
           <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8;">
-            <p style="margin: 0 0 5px 0;">This is an automated notification from FormFlow.</p>
-            <p style="margin: 0;">&copy; ${new Date().getFullYear()} FormFlow. All rights reserved.</p>
+            <p style="margin: 0 0 5px 0;">This is an automated notification from FormKyte.</p>
+            <p style="margin: 0;">&copy; ${new Date().getFullYear()} FormKyte. All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -129,7 +129,7 @@ export async function sendSubmissionNotification({
 
   try {
     const info = await transporter.sendMail({
-      from: `"FormFlow" <${smtpFrom}>`,
+      from: `"FormKyte" <${smtpFrom}>`,
       to: ownerEmail,
       subject: `New response on: ${formTitle}`,
       html: htmlContent,
@@ -169,14 +169,14 @@ export async function sendResetPasswordEmail({
     <html>
       <head>
         <meta charset="utf-8">
-        <title>Reset Your Password - FormFlow</title>
+        <title>Reset Your Password - FormKyte</title>
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; padding: 30px 15px; margin: 0;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0;">
           
           <!-- Banner Header -->
           <div style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); padding: 30px; text-align: center; color: #ffffff;">
-            <h1 style="margin: 0; font-size: 22px; font-weight: 800; tracking-tight: -0.025em;">FormFlow Security</h1>
+            <h1 style="margin: 0; font-size: 22px; font-weight: 800; tracking-tight: -0.025em;">FormKyte Security</h1>
             <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Password Reset Request</p>
           </div>
           
@@ -186,7 +186,7 @@ export async function sendResetPasswordEmail({
               Hi ${name || "User"},
             </p>
             <p style="margin: 0 0 25px 0; font-size: 15px; color: #334155; line-height: 1.5;">
-              We received a request to reset your FormFlow password. Click the button below to secure your account and choose a new password.
+              We received a request to reset your FormKyte password. Click the button below to secure your account and choose a new password.
             </p>
             
             <!-- Button Link -->
@@ -212,8 +212,8 @@ export async function sendResetPasswordEmail({
           
           <!-- Footer -->
           <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8;">
-            <p style="margin: 0 0 5px 0;">This is an automated security notification from FormFlow.</p>
-            <p style="margin: 0;">&copy; ${new Date().getFullYear()} FormFlow. All rights reserved.</p>
+            <p style="margin: 0 0 5px 0;">This is an automated security notification from FormKyte.</p>
+            <p style="margin: 0;">&copy; ${new Date().getFullYear()} FormKyte. All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -222,9 +222,9 @@ export async function sendResetPasswordEmail({
 
   try {
     const info = await transporter.sendMail({
-      from: `"FormFlow Security" <${smtpFrom}>`,
+      from: `"FormKyte Security" <${smtpFrom}>`,
       to: email,
-      subject: "Reset your FormFlow password",
+      subject: "Reset your FormKyte password",
       html: htmlContent,
     });
 

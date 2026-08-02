@@ -39,7 +39,7 @@ export default async function DashboardPage() {
 
   // Calculate stats
   const totalForms = forms.length;
-  const totalResponses = forms.reduce((sum: number, form: any) => sum + (form._count?.responses || 0), 0);
+  const totalResponses = forms.reduce((sum: number, form: { _count?: { responses: number } }) => sum + (form._count?.responses || 0), 0);
 
   // Fetch count of AI analyzed responses
   const aiAnalyzed = await db.response.count({

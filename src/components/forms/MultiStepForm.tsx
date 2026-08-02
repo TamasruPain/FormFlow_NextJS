@@ -5,10 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 
+import { FileValue } from "./FieldRenderer";
+
 interface MultiStepFormProps {
   fields: FieldDefinition[];
-  values: Record<string, any>;
-  onChange: (fieldId: string, value: any) => void;
+  values: Record<string, string | number | boolean | string[] | FileValue | null | undefined>;
+  onChange: (fieldId: string, value: string | number | boolean | string[] | FileValue | null | undefined) => void;
   errors: Record<string, string>;
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   onSubmit: () => void;

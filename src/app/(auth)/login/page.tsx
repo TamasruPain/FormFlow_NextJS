@@ -45,7 +45,7 @@ export default function LoginPage() {
           },
         }
       );
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }
@@ -117,8 +117,8 @@ export default function LoginPage() {
                 </span>
               </div>
               <p className="text-xs text-zinc-300 italic leading-relaxed">
-                "The drag-and-drop builder is super smooth. Creating multi-step forms
-                feels fluid, and the responses load instantly. Definitely five stars!"
+                &quot;The drag-and-drop builder is super smooth. Creating multi-step forms
+                feels fluid, and the responses load instantly. Definitely five stars!&quot;
               </p>
             </div>
 
@@ -126,7 +126,7 @@ export default function LoginPage() {
             <div className="space-y-3 bg-zinc-950/60 rounded-xl p-4 border border-zinc-900/80">
               <div className="flex items-center gap-2">
                 <BrainCircuit className="h-4 w-4 text-sky-400 animate-pulse" />
-                <span className="text-xs font-bold text-zinc-200">FormFlow Intelligence</span>
+                <span className="text-xs font-bold text-zinc-200">FormKyte Intelligence</span>
               </div>
               <div className="space-y-2">
                 <motion.div
@@ -191,7 +191,7 @@ export default function LoginPage() {
                 Welcome back
               </h2>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Enter your credentials to access your FormFlow dashboard.
+                Enter your credentials to access your FormKyte dashboard.
               </p>
             </motion.div>
 
@@ -277,7 +277,7 @@ export default function LoginPage() {
               {/* Redirect to Register */}
               <motion.div variants={itemVariants} className="text-center pt-2">
                 <p className="text-sm text-zinc-400">
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <Link
                     href="/register"
                     className="font-bold text-blue-400 hover:text-blue-300 transition-colors"
@@ -288,6 +288,19 @@ export default function LoginPage() {
               </motion.div>
             </form>
           </motion.div>
+          
+          {/* Footer signature */}
+          <div className="mt-8 text-center text-xs text-zinc-500">
+            Handcrafted with ❤️ by{" "}
+            <a
+              href="https://github.com/TamasruPain"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#71717A] hover:text-[#E5A320] transition-colors duration-200 font-semibold"
+            >
+              @TamasruPain
+            </a>
+          </div>
         </div>
       </div>
     </div>
